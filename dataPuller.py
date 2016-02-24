@@ -1,6 +1,63 @@
 import requests
 import math
 import time
+
+###
+#THIS IS WHERE FUNCTIONS ARE DEFINED
+##
+
+def getJSONData(userName):
+	if getUserOrChannel == "channel":
+		getString = CHANNEL % userName
+	elif getUserOrChannel == "user":
+		getString = USER % userName
+	#first call
+	response = requests.get(getString)
+	responseJSON = response.json()
+
+	#num calls made and default wait time.
+	numCalls = 1
+	waitTime = 1
+
+	#calculate needed calls
+	totalNeededCalls = math.ceil( responseJSON["_total"]/100)
+	if totalNeededCalls > limit and limit != -1:
+		totalNeededCalls = limit
+	#calculate the wait time.
+	if CallsPerSecond == -1:
+		#some arbitrary default
+		waitTime = 1/10
+	else:
+		waitTime = 1/CallsPerSecond
+
+	print("Number of calls needed is ", totalNeededCalls)
+
+	#Works for one user not for a file
+	#print(TID, end="")
+	outputFile.write(userName)
+	while numCalls <= totalNeededCalls:
+		for x in responseJSON["follows"]:
+			if getUserOrChannel == "user":
+				for y in x["channel"]:
+					if y == "name":
+						#print("," + x["channel"][y] ,end="")
+						outputFile.write(","+x["channel"][y])
+			elif getUserOrChannel == "channel":
+				for y in x["user"]:
+					if y == "name":
+						#print("," + x["user"][y], end="")
+						outputFile.write(","+x["user"][y])
+		time.sleep(waitTime)
+		response = requests.get(responseJSON["_links"]["next"])
+		responseJSON = response.json()
+		numCalls = numCalls + 1
+	#print()
+	outputFile.write("\n")
+
+##
+#General Logic
+##
+
 #The number of API calls to be made -1 for until complete. Any ohter number is the upper limit.
 limit = -1
 CallsPerSecond = -1
@@ -14,6 +71,7 @@ USER = "https://api.twitch.tv/kraken/users/%s/follows/channels?limit=100"
 readFromFile = 0
 usernameOrFilePath = ""
 TID = ""
+outputFile = ""
 outputFileName = ""
 
 #if we read from a file the format of the file must be TID, ITEM1, ITEM2, ..., ITEMN\n
@@ -25,7 +83,7 @@ if userResponse.lower() == 'yes':
 	inputFile = open(usernameOrFilePath, 'r')
 	#all lines of the file.
 	fileLines = inputFile.read().splitlines()
-	lineData = fileLines[0].strip().split(", ")
+	lineData = fileLines[0].strip().split(",")
 	TID = lineData[0]
 else:
 	#not a file grabbing by username
@@ -46,46 +104,16 @@ if userReponse.lower() == "user":
 	getUserOrChannel = "user"
 else:
 	getUserOrChannel = "channel"
+
+outputFileName = input("Please insert the name of an output file\n")
 print(limit, CallsPerSecond, getUserOrChannel, readFromFile, usernameOrFilePath)
 
 #get requests once for testing
-if getUserOrChannel == "channel":
-	getString = CHANNEL % TID
-	outputFileName = "%s'sFollowers" % TID
-elif getUserOrChannel == "user":
-	getString = USER % TID
-	outputFileName = "%s'Follows" % TID
+outputFile = open(outputFileName, 'w')
 
-#first call
-response = requests.get(getString)
-responseJSON = response.json()
-
-#num calls made and default wait time.
-numCalls = 1
-waitTime = 1
-
-#calculate needed calls
-totalNeededCalls = math.ceil( responseJSON["_total"]/100)
-if totalNeededCalls > limit and limit != -1:
-	totalNeededCalls = limit
-#calculate the wait time.
-if CallsPerSecond == -1:
-	#some arbitrary default
-	waitTime = 1/10
-else:
-	waitTime = 1/CallsPerSecond
-
-print("Number of calls needed is ", totalNeededCalls)
-
-#Works for one user not for a file
-print(TID, end="")
-while numCalls <= totalNeededCalls:
-	for x in responseJSON["follows"]:
-		for y in x["channel"]:
-			if y == "name":
-				print(", " + x["channel"][y] ,end="")
-	time.sleep(waitTime)
-	response = requests.get(responseJSON["_links"]["next"])
-	responseJSON = response.json()
-	numCalls = numCalls + 1
-print()
+if readFromFile == 1:
+	#loop logic here
+	for y in range(1, len(lineData)):
+		getJSONData(lineData[y])
+elif readFromFile == 0:
+	getJSONData(TID)
