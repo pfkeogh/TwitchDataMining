@@ -83,8 +83,6 @@ if userResponse.lower() == 'yes':
 	inputFile = open(usernameOrFilePath, 'r')
 	#all lines of the file.
 	fileLines = inputFile.read().splitlines()
-	lineData = fileLines[0].strip().split(",")
-	TID = lineData[0]
 else:
 	#not a file grabbing by username
 	usernameOrFilePath = input("Please type the username\n")
@@ -113,7 +111,9 @@ outputFile = open(outputFileName, 'w')
 
 if readFromFile == 1:
 	#loop logic here
-	for y in range(1, len(lineData)):
-		getJSONData(lineData[y])
+	for x in range(0, len(fileLines)):
+		lineData = fileLines[x].strip().split(",")
+		for y in range (1, len(lineData)):
+			getJSONData(lineData[y])
 elif readFromFile == 0:
 	getJSONData(TID)
