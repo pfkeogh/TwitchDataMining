@@ -40,19 +40,22 @@ def getJSONData(userName):
 
 	#Works for one user not for a file
 	#print(TID, end="")
-	outputFile.write(userName)
+	if getUserOrChannel == "channel":
+		outputFile.write(userName+",")
 	while numCalls <= totalNeededCalls:
 		for x in responseJSON["follows"]:
 			if getUserOrChannel == "user":
 				for y in x["channel"]:
 					if y == "name":
-						#print("," + x["channel"][y] ,end="")
-						outputFile.write(","+x["channel"][y])
+						if x["channel"][y] != TID:
+							#print("," + x["channel"][y] ,end="")
+							outputFile.write(x["channel"][y]+",")
 			elif getUserOrChannel == "channel":
 				for y in x["user"]:
 					if y == "name":
-						#print("," + x["user"][y], end="")
-						outputFile.write(","+x["user"][y])
+						if x["user"][y] != userName:
+							#print("," + x["user"][y], end="")
+							outputFile.write(x["user"][y]+",")
 		time.sleep(waitTime)
 		response = requests.get(responseJSON["_links"]["next"])
 		responseJSON = response.json()
@@ -119,7 +122,8 @@ if readFromFile == 1:
 	#loop logic here
 	for x in range(0, len(fileLines)):
 		lineData = fileLines[x].strip().split(",")
-		for y in range (1, len(lineData)):
+		TID = lineData[0];
+		for y in range (1, len(lineData)-1):
 			getJSONData(lineData[y])
 elif readFromFile == 0:
 	getJSONData(TID)
