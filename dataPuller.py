@@ -1,3 +1,9 @@
+###
+#David Shagam
+#DataScraper for Data Mining
+#Currently configured for twitch API
+###
+
 import requests
 import math
 import time
