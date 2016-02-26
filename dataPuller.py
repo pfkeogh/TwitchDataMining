@@ -74,7 +74,7 @@ CallsPerSecond = -1
 #Channel = a channels follower list. Aka Channel A has User B following it.
 getUserOrChannel = "NONE"
 #channels followinglist
-CHANNEL="https://api.twitch.tv/kraken/channels/%s/follows?limit=100"
+CHANNEL="https://api.twitch.tv/kraken/channels/%s/follows?limit=100&direction=asc"
 #Users followers
 USER = "https://api.twitch.tv/kraken/users/%s/follows/channels?limit=100"
 readFromFile = 0
