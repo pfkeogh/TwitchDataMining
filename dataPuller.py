@@ -17,8 +17,19 @@ def getJSONData(userName):
 		getString = CHANNEL % userName
 	elif getUserOrChannel == "user":
 		getString = USER % userName
+
+	#calculate the wait time.
+	if CallsPerSecond == -1:
+		#some arbitrary default
+		waitTime = 1/10
+	else:
+		waitTime = 1/CallsPerSecond
+
 	#first call
 	response = requests.get(getString)
+	while response.status_code != requests.codes.ok:
+		time.sleep(waitTime)
+		response = requests.get(getString)
 	responseJSON = response.json()
 
 	#num calls made and default wait time.
@@ -29,14 +40,8 @@ def getJSONData(userName):
 	totalNeededCalls = math.ceil( responseJSON["_total"]/100)
 	if totalNeededCalls > limit and limit != -1:
 		totalNeededCalls = limit
-	#calculate the wait time.
-	if CallsPerSecond == -1:
-		#some arbitrary default
-		waitTime = 1/10
-	else:
-		waitTime = 1/CallsPerSecond
 
-	print("Number of calls needed is ", totalNeededCalls)
+	print("Number of calls needed is for user", NUMPEOPLE, "is", totalNeededCalls)
 
 	#Works for one user not for a file
 	#print(TID, end="")
@@ -57,7 +62,11 @@ def getJSONData(userName):
 							#print("," + x["user"][y], end="")
 							outputFile.write(x["user"][y]+",")
 		time.sleep(waitTime)
+		##gets json info for loop
 		response = requests.get(responseJSON["_links"]["next"])
+		while response.status_code != requests.codes.ok:
+			time.sleep(waitTime)
+			response = requests.get(responseJSON["_links"]["next"])
 		responseJSON = response.json()
 		numCalls = numCalls + 1
 	#print()
@@ -82,6 +91,7 @@ usernameOrFilePath = ""
 TID = ""
 outputFile = ""
 outputFileName = ""
+NUMPEOPLE = 1
 
 #if we read from a file the format of the file must be TID, ITEM1, ITEM2, ..., ITEMN\n
 #for example BobRoss, Sue, Joe, Billy\n
@@ -125,5 +135,6 @@ if readFromFile == 1:
 		TID = lineData[0];
 		for y in range (1, len(lineData)-1):
 			getJSONData(lineData[y])
+			NUMPEOPLE = NUMPEOPLE +1
 elif readFromFile == 0:
 	getJSONData(TID)
