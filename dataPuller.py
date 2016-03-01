@@ -28,6 +28,8 @@ def getJSONData(userName):
 	#first call
 	response = requests.get(getString)
 	while response.status_code != requests.codes.ok:
+		if response.status_code == 404:
+			return
 		time.sleep(waitTime)
 		response = requests.get(getString)
 	responseJSON = response.json()
@@ -65,6 +67,8 @@ def getJSONData(userName):
 		##gets json info for loop
 		response = requests.get(responseJSON["_links"]["next"])
 		while response.status_code != requests.codes.ok:
+			if response.status_code == 404:
+				return
 			time.sleep(waitTime)
 			response = requests.get(responseJSON["_links"]["next"])
 		responseJSON = response.json()
